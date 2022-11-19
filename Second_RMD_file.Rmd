@@ -1,0 +1,163 @@
+---
+title: "Gaurang Kakade's second RMD File"
+author: "Gaurang Kakade with Sagan Kakkar"
+date: "2022-11-11"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r Packages}
+#| warning = FALSE, 
+#| message = FALSE
+
+## Uploading the neccessary packages for data scraping, reading rectangular data, and for creating a visualization
+library(rvest)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(tidyr)
+
+```
+
+```{r IvyLeagueRanking2022}
+## Web Scraping 
+### Ivy League Ranking 2022
+
+ivyTable <- read_html(
+  x = "https://www.shemmassianconsulting.com/blog/ivy-league-rankings"
+) %>%
+html_elements(css = "table") %>%
+html_table()
+```
+
+```{r IvyLeagueAcceptanceRate}
+#### After looking at the list elements, we want the enitre element 1
+###  Ivy League Acceptance Rate
+ivyaccTable <- read_html(
+  x = "https://admissionsight.com/ivy-league-acceptance-rates/"
+) %>%
+html_elements(css = "table") %>%
+html_table()
+```
+
+```{r Ranking2022}
+### After looking at the list elements, we want the entire element 1
+## Data Wrangling
+### Clean Ranking Data
+#### Extract the item for convenience for Ranking
+
+ranking <- ivyTable[[1]]
+rankingRefreshed <- ranking[1,]
+ranking <- ranking[-1, ]
+rankingRefreshed[1,1] <- "University"
+names(ranking) <- as.vector(unlist(rankingRefreshed[1,]))
+```
+
+```{r AcceptanceRate2022}
+#### Extract the item for convenience for Acceptance 
+acceptance <- ivyaccTable[[1]]
+```
+
+```{r join}
+### Joining the two tables to create the Final table
+ranking[4,1]<- "UPenn" 
+Final_table <- left_join(
+  x = acceptance,
+  y = ranking,
+  by = c("UNIVERSITY" = "University")
+)
+```
+
+```{r Conversion}
+
+Final_table <- Final_table %>% mutate(`Endowment Size`= parse_number(`Endowment Size`))
+```
+
+```{r DataVisualization}
+
+## Make Plot ----
+ggplot(
+  data = Final_table,
+  mapping = aes(x = `Endowment Size`, y = `U.S. News Ranking`, color = UNIVERSITY)
+) +
+  geom_point(size = 5, na.rm = TRUE) +
+  
+  geom_text(
+    mapping = aes(label = paste0("",`UNIVERSITY`)),
+    color = "black",
+    nudge_y = 0.5,
+    size = 3,
+    na.rm = TRUE
+  ) +
+  theme_bw() +
+  xlab("Endowment Size in Billion ($)") +
+  ylab("U.S. News Ranking 2022") +
+  ggtitle("U.S. News Ranking 2022 by Endowment Size in Billion ($)") +
+  theme(
+    text = element_text(size = 12)
+  )
+
+```
+
+```{r visualization, eval=FALSE}
+esquisse::esquisser(Final_table)
+```
+
+```{r Trackdowninstall,include=FALSE}
+#| echo = TRUE,
+#| eval = FALSE
+
+devtools::install_github(
+repo = "claudiozandonella/trackdown",
+build_vignettes = TRUE
+)
+```
+
+``` {r install,eval=FALSE,include=FALSE}
+trackdown::upload_file(
+file = "Second_RMD_file.Rmd",
+hide_code = TRUE,
+path_output = "Second_RMD_file.pdf"
+)
+```
+
+```{r update,include=FALSE}
+#| echo = TRUE,
+#| eval = FALSE
+
+trackdown::update_file(
+  file = "Second_RMD_File",
+  hide_code = TRUE,
+  rich_text = TRUE,
+  path_output = "Second_RMD_file"
+)
+
+```
+
+```{r download,include=FALSE}
+#| echo = TRUE,
+#| eval = FALSE
+
+trackdown::download_file(
+  file = "Second_RMD_file"
+)
+
+```
+
+```{r render,include=FALSE}
+#| echo = TRUE,
+#| eval = FALSE
+
+trackdown::render_file(
+  file = "Second_RMD_file"
+)
+
+```
+### Please type narrative text here. 
+
+The visualization created shows the U.S. News Rankings versus the endowment size of the top universities in the United States. The colors and labels help differentiate between the different universities in the chart. The pattern that can be seen based on this visualization is that those universities with a smaller endowment, when compared to the other universities, have a lower U.S. news ranking. Conversely, those universities with a larger relative endowment have a higher U.S. news ranking. Based on this we can see a correlation between the U.S. news rankings and the endowment size. Higher U.S. news rankings correlate with large endowments. This could be useful for prospective students of these universities because endowments can affect universities in a variety of ways that could potentially affect those prospective students. An example of this would be that universities with large endowments may be able to participate in more advanced research than those universities without as large of an endowment.

@@ -1,0 +1,1 @@
+tinytex::is_tinytex()
